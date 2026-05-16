@@ -25,9 +25,11 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { auth, db, isFirebaseConfigured } from './firebase';
 import {
+  browserLocalPersistence,
   getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
+  setPersistence,
   signInWithPopup,
   signInWithRedirect,
   signOut,
@@ -150,6 +152,7 @@ const LOCAL_SOCIAL_POSTS_KEY = 'cravebox_social_posts';
 const LOCAL_MENU_BY_SESSION_KEY = 'cravebox_menu_by_session_v1';
 const LOCAL_VOTES_BY_SESSION_KEY = 'cravebox_votes_by_session_v1';
 const LOCAL_STUDENT_VOTES_BY_SESSION_KEY = 'cravebox_student_votes_by_session_v1';
+const STUDENT_AUTH_PENDING_KEY = 'cravebox_student_auth_pending_v1';
 const STUDENT_REGISTRY_COLLECTION = 'registered_students_v2';
 const LOW_STOCK_MINIMUM_PAR_LEVEL = 10;
 
@@ -711,15 +714,23 @@ function App() {
       const nextName = student.displayName || student.email?.split('@')[0] || 'Student';
       setUserName(nextName);
       setStudentEmail(student.email || '');
+
+      const wasStudentLogin = window.sessionStorage.getItem(STUDENT_AUTH_PENDING_KEY) === '1';
+      if (wasStudentLogin || role === 'student' || view === 'role-select' || view === 'student-auth') {
+        window.sessionStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+        setRole('student');
+        setView((currentView) => (currentView === 'app' ? 'app' : 'student-auth'));
+        setActiveTab(getRoleStartTab('student'));
+      }
     });
-  }, []);
+  }, [role, view]);
 
   useEffect(() => {
     if (!currentStudent) return;
     if (role !== 'student' && view !== 'student-auth' && view !== 'role-select') return;
 
     setRole('student');
-    setView('app');
+    setView((currentView) => (currentView === 'app' ? 'app' : 'student-auth'));
     setActiveTab(getRoleStartTab('student'));
   }, [currentStudent, role, view]);
 
@@ -740,9 +751,25 @@ function App() {
   useEffect(() => {
     if (!auth) return;
 
-    getRedirectResult(auth).catch((error) => {
-      setStudentAuthError(getGoogleAuthErrorMessage(error));
-    });
+    getRedirectResult(auth)
+      .then((result) => {
+        const student = result?.user || auth.currentUser;
+        const wasStudentLogin = window.sessionStorage.getItem(STUDENT_AUTH_PENDING_KEY) === '1';
+        if (!student || !wasStudentLogin) return;
+
+        const nextName = student.displayName || student.email?.split('@')[0] || 'Student';
+        window.sessionStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+        setCurrentStudent(student);
+        setUserName(nextName);
+        setStudentEmail(student.email || '');
+        setRole('student');
+        setView('student-auth');
+        setActiveTab(getRoleStartTab('student'));
+      })
+      .catch((error) => {
+        window.sessionStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+        setStudentAuthError(getGoogleAuthErrorMessage(error));
+      });
   }, []);
 
   useEffect(() => {
@@ -1013,16 +1040,19 @@ function App() {
     setIsStudentSigningIn(true);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
+    window.sessionStorage.setItem(STUDENT_AUTH_PENDING_KEY, '1');
 
     try {
+      await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, provider);
       if (result?.user) {
         const nextName = result.user.displayName || result.user.email?.split('@')[0] || 'Student';
+        window.sessionStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
         setCurrentStudent(result.user);
         setUserName(nextName);
         setStudentEmail(result.user.email || '');
         setRole('student');
-        setView('app');
+        setView('student-auth');
         setActiveTab(getRoleStartTab('student'));
       }
       setIsStudentSigningIn(false);
@@ -1034,9 +1064,11 @@ function App() {
           await signInWithRedirect(auth, provider);
           return;
         } catch (redirectError) {
+          window.sessionStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
           setStudentAuthError(getGoogleAuthErrorMessage(redirectError));
         }
       } else {
+        window.sessionStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
         setStudentAuthError(getGoogleAuthErrorMessage(error));
       }
 
