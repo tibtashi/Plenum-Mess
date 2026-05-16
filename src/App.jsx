@@ -996,10 +996,10 @@ function App() {
     }
 
     setIsStudentSigningIn(true);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
       setIsStudentSigningIn(false);
     } catch (error) {
