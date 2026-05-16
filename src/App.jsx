@@ -23,7 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { auth, db } from './firebase';
+import { auth, db, isFirebaseConfigured } from './firebase';
 import {
   getRedirectResult,
   GoogleAuthProvider,
@@ -639,7 +639,7 @@ function App() {
     readLocalJson(LOCAL_STUDENT_VOTES_BY_SESSION_KEY, {})
   );
   const [registeredStudents, setRegisteredStudents] = useState([]);
-  const [currentStudent, setCurrentStudent] = useState(() => auth.currentUser);
+  const [currentStudent, setCurrentStudent] = useState(() => auth?.currentUser ?? null);
   const [isStudentSigningIn, setIsStudentSigningIn] = useState(false);
   const [studentAuthError, setStudentAuthError] = useState('');
   const [isClearingStudentRegistry, setIsClearingStudentRegistry] = useState(false);
@@ -648,6 +648,12 @@ function App() {
   const [voteFeedback, setVoteFeedback] = useState(null);
 
   useEffect(() => {
+    if (!db) {
+      setInventory(getLocalInventory());
+      setInventoryError('Firebase is not configured for this deployment, so the prototype is using local pantry data.');
+      return undefined;
+    }
+
     const inventoryQuery = query(
       collection(db, 'artifacts', appId, 'public', 'data', 'inventory'),
       orderBy('name')
@@ -674,6 +680,8 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!auth) return undefined;
+
     return onAuthStateChanged(auth, (student) => {
       setCurrentStudent(student);
 
@@ -694,7 +702,7 @@ function App() {
   }, [role]);
 
   useEffect(() => {
-    if (!currentStudent) return;
+    if (!currentStudent || !db) return;
 
     const name = currentStudent.displayName || currentStudent.email?.split('@')[0] || 'Student';
     saveStudentRegistration({
@@ -708,6 +716,8 @@ function App() {
   }, [currentStudent]);
 
   useEffect(() => {
+    if (!auth) return;
+
     getRedirectResult(auth).catch((error) => {
       const code = error?.code || '';
 
@@ -728,6 +738,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!db) {
+      setRegisteredStudents([]);
+      return undefined;
+    }
+
     const studentsQuery = query(
       collection(db, 'artifacts', appId, 'public', 'data', STUDENT_REGISTRY_COLLECTION),
       orderBy('name')
@@ -903,7 +918,7 @@ function App() {
   const engagementBars = [42, 64, 56, 90, 76, 34, 28];
 
   const resetToRoleSelect = () => {
-    if (role === 'student') {
+    if (role === 'student' && auth) {
       signOut(auth).catch(() => {});
     }
     setView('role-select');
@@ -916,6 +931,8 @@ function App() {
   };
 
   const saveStudentRegistration = async ({ id, name, email = '', authUid = '' }) => {
+    if (!db) return;
+
     await setDoc(
       doc(db, 'artifacts', appId, 'public', 'data', STUDENT_REGISTRY_COLLECTION, id),
       {
@@ -968,6 +985,12 @@ function App() {
 
   const handleStudentSignIn = async () => {
     setStudentAuthError('');
+
+    if (!isFirebaseConfigured || !auth) {
+      setStudentAuthError('Google login needs Firebase environment variables in Vercel first.');
+      return;
+    }
+
     setIsStudentSigningIn(true);
 
     try {
@@ -997,6 +1020,11 @@ function App() {
     setStudentRegistryMessage('');
 
     try {
+      if (!db) {
+        setStudentRegistryMessage('Firebase is not configured, so there is no online student registry to clear.');
+        return;
+      }
+
       const snapshot = await getDocs(
         collection(db, 'artifacts', appId, 'public', 'data', STUDENT_REGISTRY_COLLECTION)
       );

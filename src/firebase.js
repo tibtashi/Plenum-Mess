@@ -11,9 +11,10 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const isFirebaseConfigured = Object.values(firebaseConfig).every(Boolean);
+const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
 
-export { auth, db };
+export { auth, db, isFirebaseConfigured };
 export const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;

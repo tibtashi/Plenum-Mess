@@ -124,6 +124,8 @@ Firestore inventory sync is attempted first. If Firestore is unavailable, the pr
 
 ## Recent Change Log
 
+- Added Firebase configuration guards so the deployed app still renders when Vercel environment variables are missing.
+- Added clearer Google login messaging when Firebase is not configured in deployment.
 - Expanded pantry material search with many common raw materials.
 - Removed visible zone/cold-room labels from stock cards where they were not useful to the user.
 - Moved Current Stock List above Suggested Dishes.
@@ -146,6 +148,7 @@ Firestore inventory sync is attempted first. If Firestore is unavailable, the pr
 - Firestore rules are open for development and must be tightened before real deployment.
 - Firebase Auth accounts cannot be deleted from the frontend; the app can only clear its student registry collection.
 - Vercel deployment needs environment variables added in the Vercel project settings.
+- Without Vercel environment variables, Firebase-backed features are disabled but the app should still render using local prototype data.
 
 ## Development Commands
 
