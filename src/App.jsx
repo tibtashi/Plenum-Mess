@@ -712,12 +712,13 @@ function App() {
       setUserName(nextName);
       setStudentEmail(student.email || '');
 
-      if (role === 'student') {
+      if (role === 'student' || view === 'student-auth' || view === 'role-select') {
+        setRole('student');
         setView('app');
         setActiveTab(getRoleStartTab('student'));
       }
     });
-  }, [role]);
+  }, [role, view]);
 
   useEffect(() => {
     if (!currentStudent || !db) return;
@@ -1005,7 +1006,16 @@ function App() {
     provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      if (result?.user) {
+        const nextName = result.user.displayName || result.user.email?.split('@')[0] || 'Student';
+        setCurrentStudent(result.user);
+        setUserName(nextName);
+        setStudentEmail(result.user.email || '');
+        setRole('student');
+        setView('app');
+        setActiveTab(getRoleStartTab('student'));
+      }
       setIsStudentSigningIn(false);
     } catch (error) {
       const code = error?.code || '';
