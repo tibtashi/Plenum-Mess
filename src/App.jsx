@@ -957,19 +957,24 @@ function App() {
   };
 
   const handleAuth = async () => {
-    if (role === 'student' && userName.trim()) {
-      const name = userName.trim();
-      const manualId = currentStudent?.uid ?? `manual-${getStudentKey(studentEmail || name)}`;
+    if (role === 'student') {
+      if (!currentStudent) {
+        setStudentAuthError('Please sign in with Google Mail before entering the student portal.');
+        return;
+      }
+
+      const name = currentStudent.displayName || currentStudent.email?.split('@')[0] || userName.trim() || 'Student';
 
       try {
         await saveStudentRegistration({
-          id: manualId,
+          id: currentStudent.uid,
           name,
-          email: studentEmail,
-          authUid: currentStudent?.uid ?? '',
+          email: currentStudent.email || studentEmail,
+          authUid: currentStudent.uid,
         });
       } catch {
-        setStudentAuthError('Student details could not be saved right now, but you can still continue.');
+        setStudentAuthError('Student details could not be saved right now. Please try again.');
+        return;
       }
 
       setView('app');
@@ -1342,11 +1347,11 @@ function App() {
               />
 
               <button
-                disabled={!userName.trim()}
+                disabled={!currentStudent}
                 onClick={handleAuth}
                 className="w-full rounded-full bg-primary px-6 py-4 text-label-bold font-black uppercase tracking-[0.25em] text-white transition-all disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Access Portal
+                {currentStudent ? 'Access Portal' : 'Google Login Required'}
               </button>
 
               <button
