@@ -28,6 +28,7 @@ import {
   getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithPopup,
   signInWithRedirect,
   signOut,
 } from 'firebase/auth';
@@ -462,6 +463,22 @@ const toVoteArray = (value) => {
   return value ? [value] : [];
 };
 const normalizeSearch = (value) => value.trim().toLowerCase();
+const getCurrentHost = () => (typeof window === 'undefined' ? 'this app domain' : window.location.hostname);
+const getGoogleAuthErrorMessage = (error) => {
+  const code = error?.code || '';
+
+  if (code.includes('unauthorized-domain')) {
+    return `Google login is blocked by Firebase for ${getCurrentHost()}. Add this exact domain in Firebase Authorized domains.`;
+  }
+
+  if (code.includes('operation-not-allowed')) {
+    return 'Google login is not enabled yet in Firebase Authentication.';
+  }
+
+  return code
+    ? `Google sign-in could not be started: ${code}`
+    : 'Google sign-in could not be started. You can still enter your name and continue.';
+};
 const toMaterialKey = (value) =>
   normalizeSearch(value)
     .replace(/[^a-z0-9]+/g, '-')
@@ -719,21 +736,7 @@ function App() {
     if (!auth) return;
 
     getRedirectResult(auth).catch((error) => {
-      const code = error?.code || '';
-
-      if (code.includes('unauthorized-domain')) {
-        setStudentAuthError('Google login needs this app domain added in Firebase Authorized domains.');
-        return;
-      }
-
-      if (code.includes('operation-not-allowed')) {
-        setStudentAuthError('Google login is not enabled yet in Firebase Authentication.');
-        return;
-      }
-
-      if (code) {
-        setStudentAuthError(`Google login failed: ${code}`);
-      }
+      setStudentAuthError(getGoogleAuthErrorMessage(error));
     });
   }, []);
 
@@ -996,21 +999,22 @@ function App() {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithRedirect(auth, provider);
+      await signInWithPopup(auth, provider);
+      setIsStudentSigningIn(false);
     } catch (error) {
       const code = error?.code || '';
 
-      if (code.includes('unauthorized-domain')) {
-        setStudentAuthError('Google login needs this app domain added in Firebase Authorized domains.');
-      } else if (code.includes('operation-not-allowed')) {
-        setStudentAuthError('Google login is not enabled yet in Firebase Authentication.');
+      if (code.includes('popup-blocked')) {
+        try {
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (redirectError) {
+          setStudentAuthError(getGoogleAuthErrorMessage(redirectError));
+        }
       } else {
-        setStudentAuthError(
-          code
-            ? `Google sign-in could not be started: ${code}`
-            : 'Google sign-in could not be started. You can still enter your name and continue.'
-        );
+        setStudentAuthError(getGoogleAuthErrorMessage(error));
       }
+
       setIsStudentSigningIn(false);
     }
   };
