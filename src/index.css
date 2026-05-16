@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(255, 179, 138, 0.24), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(188, 238, 211, 0.22), transparent 26%),
+    #fff8f6;
+  color: #27180f;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+textarea {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+img {
+  display: block;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* TYPOGRAPHY */
+.text-headline-xl { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(2.5rem, 6vw, 3.75rem); line-height: 1.05; letter-spacing: -0.04em; font-weight: 800; }
+.text-headline-lg { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.9rem, 4vw, 2.35rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 700; }
+.text-headline-md { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.2rem, 2.6vw, 1.5rem); line-height: 1.25; letter-spacing: -0.02em; font-weight: 700; }
+.text-body-lg { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; line-height: 1.6; font-weight: 500; }
+.text-body-md { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; line-height: 1.6; font-weight: 400; }
+.text-label-bold { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; line-height: 1.2; letter-spacing: 0.02em; font-weight: 700; }
+.text-label-sm { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; line-height: 1.2; letter-spacing: 0.04em; font-weight: 600; }
+
+::selection {
+  background: rgba(255, 179, 138, 0.45);
+  color: #27180f;
+}
+
+/* TACTILE LIP BUTTONS */
+.lip-button {
+  --lip-color: #6d3919;
+  position: relative;
+  transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 0 0 var(--lip-color);
+}
+
+.lip-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 0 var(--lip-color);
+}
+
+.lip-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 var(--lip-color);
+}
+
+.tactile-button {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 4px 0 rgba(109, 57, 25, 0.12);
+}
+
+.tactile-button:hover {
+  transform: translateY(-1px);
+}
+
+.tactile-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(109, 57, 25, 0.12);
+}
+
+/* PEACH TINTED SHADOWS */
+.shadow-premium {
+  box-shadow: 0 8px 30px rgba(137, 80, 46, 0.12), 0 4px 8px rgba(137, 80, 46, 0.05);
+}
+
+.shadow-inner-soft {
+  box-shadow: inset 0 2px 4px rgba(66, 48, 38, 0.1);
+}
+
+/* GLASS CARDS */
+.glass-card {
+  background: rgba(255, 248, 245, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(137, 80, 46, 0.1);
+}
+
+.text-graffiti {
+  font-family: 'Permanent Marker', cursive;
+}
+
+.graffiti-wall {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 91, 169, 0.18), transparent 18%),
+    radial-gradient(circle at 78% 24%, rgba(55, 214, 255, 0.18), transparent 16%),
+    radial-gradient(circle at 42% 70%, rgba(255, 224, 102, 0.14), transparent 18%),
+    linear-gradient(180deg, #1f1f1f 0%, #171717 100%);
+  position: relative;
+}
+
+.graffiti-wall::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(115deg, transparent 0 46%, rgba(255,255,255,0.04) 46% 48%, transparent 48% 100%),
+    linear-gradient(65deg, transparent 0 74%, rgba(255,255,255,0.05) 74% 76%, transparent 76% 100%);
+  pointer-events: none;
+}
+
+/* BENTO ANIMATIONS */
+@keyframes pop-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop {
+  animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

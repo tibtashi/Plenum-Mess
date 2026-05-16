@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.*
+vite.out.log
+vite.err.log
+*.log
+.DS_Store
+Thumbs.db
+code.txt
+stitch_cravebox_smart_dining_ecosystem (1)/

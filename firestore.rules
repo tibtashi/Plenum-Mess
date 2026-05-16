@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Basic rule: Allow anyone to read/write for now in development
+    // (In production, we would restrict this by role)
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // More secure version (Uncomment when ready):
+    /*
+    match /artifacts/mess-voting-app-v3/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    */
+  }
+}
