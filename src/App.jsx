@@ -711,14 +711,17 @@ function App() {
       const nextName = student.displayName || student.email?.split('@')[0] || 'Student';
       setUserName(nextName);
       setStudentEmail(student.email || '');
-
-      if (role === 'student' || view === 'student-auth' || view === 'role-select') {
-        setRole('student');
-        setView('app');
-        setActiveTab(getRoleStartTab('student'));
-      }
     });
-  }, [role, view]);
+  }, []);
+
+  useEffect(() => {
+    if (!currentStudent) return;
+    if (role !== 'student' && view !== 'student-auth' && view !== 'role-select') return;
+
+    setRole('student');
+    setView('app');
+    setActiveTab(getRoleStartTab('student'));
+  }, [currentStudent, role, view]);
 
   useEffect(() => {
     if (!currentStudent || !db) return;
@@ -954,6 +957,12 @@ function App() {
   const handleRoleSelect = (selectedRole) => {
     setRole(selectedRole);
     setActiveTab(getRoleStartTab(selectedRole));
+
+    if (selectedRole === 'student' && currentStudent) {
+      setView('app');
+      return;
+    }
+
     setView(selectedRole === 'student' ? 'student-auth' : 'pin-entry');
   };
 
