@@ -466,6 +466,7 @@ const normalizeSearch = (value) => value.trim().toLowerCase();
 const getCurrentHost = () => (typeof window === 'undefined' ? 'this app domain' : window.location.hostname);
 const getGoogleAuthErrorMessage = (error) => {
   const code = error?.code || '';
+  const message = error?.message || '';
 
   if (code.includes('unauthorized-domain')) {
     return `Google login is blocked by Firebase for ${getCurrentHost()}. Add this exact domain in Firebase Authorized domains.`;
@@ -477,7 +478,7 @@ const getGoogleAuthErrorMessage = (error) => {
 
   return code
     ? `Google sign-in could not be started: ${code}`
-    : 'Google sign-in could not be started. You can still enter your name and continue.';
+    : `Google sign-in could not be started${message ? `: ${message}` : ''}. You can still enter your name and continue.`;
 };
 const toMaterialKey = (value) =>
   normalizeSearch(value)
@@ -1004,7 +1005,7 @@ function App() {
     } catch (error) {
       const code = error?.code || '';
 
-      if (code.includes('popup-blocked')) {
+      if (!code || code.includes('popup-blocked') || code.includes('popup-closed-by-user') || code.includes('cancelled-popup-request')) {
         try {
           await signInWithRedirect(auth, provider);
           return;
