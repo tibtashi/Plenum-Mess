@@ -30,7 +30,6 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   setPersistence,
-  signInWithPopup,
   signInWithRedirect,
   signOut,
 } from 'firebase/auth';
@@ -1061,34 +1060,10 @@ function App() {
 
     try {
       await setPersistence(auth, browserLocalPersistence);
-      const result = await signInWithPopup(auth, provider);
-      if (result?.user) {
-        const nextName = result.user.displayName || result.user.email?.split('@')[0] || 'Student';
-        window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
-        setCurrentStudent(result.user);
-        setUserName(nextName);
-        setStudentEmail(result.user.email || '');
-        setRole('student');
-        setView('app');
-        setActiveTab(getRoleStartTab('student'));
-      }
-      setIsStudentSigningIn(false);
+      await signInWithRedirect(auth, provider);
     } catch (error) {
-      const code = error?.code || '';
-
-      if (!code || code.includes('popup-blocked') || code.includes('popup-closed-by-user') || code.includes('cancelled-popup-request')) {
-        try {
-          await signInWithRedirect(auth, provider);
-          return;
-        } catch (redirectError) {
-          window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
-          setStudentAuthError(getGoogleAuthErrorMessage(redirectError));
-        }
-      } else {
-        window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
-        setStudentAuthError(getGoogleAuthErrorMessage(error));
-      }
-
+      window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+      setStudentAuthError(getGoogleAuthErrorMessage(error));
       setIsStudentSigningIn(false);
     }
   };
