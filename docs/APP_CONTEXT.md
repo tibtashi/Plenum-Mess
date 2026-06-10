@@ -138,6 +138,7 @@ Firestore inventory sync is attempted first. If Firestore is unavailable, the pr
 - Kept the student name field as display context only; typed names no longer bypass authentication.
 - Updated Google login return flow so authenticated students go directly into the student section after Gmail selection.
 - Added local Firebase auth persistence plus a pending-login marker so the app can recover correctly after Google redirects.
+- Changed student Google login to redirect-only to avoid popup result state being lost after Gmail selection.
 - Added Firestore student registry collection `registered_students_v2`.
 - Changed admin participation to overall totals instead of per-session checking.
 - Added Admin Social tab for student wall posts.
