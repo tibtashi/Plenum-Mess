@@ -153,6 +153,7 @@ const LOCAL_MENU_BY_SESSION_KEY = 'cravebox_menu_by_session_v1';
 const LOCAL_VOTES_BY_SESSION_KEY = 'cravebox_votes_by_session_v1';
 const LOCAL_STUDENT_VOTES_BY_SESSION_KEY = 'cravebox_student_votes_by_session_v1';
 const STUDENT_AUTH_PENDING_KEY = 'cravebox_student_auth_pending_v1';
+const STUDENT_INTENT_KEY = 'cravebox_student_intent_v1';
 const STUDENT_REGISTRY_COLLECTION = 'registered_students_v2';
 const LOW_STOCK_MINIMUM_PAR_LEVEL = 10;
 
@@ -181,6 +182,9 @@ const getLocalInventory = () => {
 const saveLocalInventory = (nextInventory) => {
   window.localStorage.setItem(LOCAL_INVENTORY_KEY, JSON.stringify(mergeInventoryItems(nextInventory)));
 };
+const hasStoredStudentIntent = () =>
+  window.localStorage.getItem(STUDENT_INTENT_KEY) === 'student' ||
+  window.localStorage.getItem(STUDENT_AUTH_PENDING_KEY) === '1';
 
 const QUICK_MATERIAL_KEYS = ['tomato', 'onion', 'rice', 'potato', 'chicken', 'paneer'];
 
@@ -621,8 +625,8 @@ function FoodImage({ src, alt, className }) {
 }
 
 function App() {
-  const [view, setView] = useState('role-select');
-  const [role, setRole] = useState(null);
+  const [view, setView] = useState(() => (hasStoredStudentIntent() ? 'student-auth' : 'role-select'));
+  const [role, setRole] = useState(() => (hasStoredStudentIntent() ? 'student' : null));
   const [userName, setUserName] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [pin, setPin] = useState('');
@@ -715,9 +719,10 @@ function App() {
       setUserName(nextName);
       setStudentEmail(student.email || '');
 
-      const wasStudentLogin = window.localStorage.getItem(STUDENT_AUTH_PENDING_KEY) === '1';
+      const wasStudentLogin = hasStoredStudentIntent();
       if (wasStudentLogin || role === 'student' || view === 'role-select' || view === 'student-auth') {
         window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+        window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
         setRole('student');
         setView('app');
         setActiveTab(getRoleStartTab('student'));
@@ -729,6 +734,7 @@ function App() {
     if (!currentStudent) return;
     if (role !== 'student' && view !== 'student-auth' && view !== 'role-select') return;
 
+    window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
     setRole('student');
     setView('app');
     setActiveTab(getRoleStartTab('student'));
@@ -754,11 +760,12 @@ function App() {
     getRedirectResult(auth)
       .then((result) => {
         const student = result?.user || auth.currentUser;
-        const wasStudentLogin = window.localStorage.getItem(STUDENT_AUTH_PENDING_KEY) === '1';
+        const wasStudentLogin = hasStoredStudentIntent();
         if (!student || !wasStudentLogin) return;
 
         const nextName = student.displayName || student.email?.split('@')[0] || 'Student';
         window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+        window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
         setCurrentStudent(student);
         setUserName(nextName);
         setStudentEmail(student.email || '');
@@ -963,6 +970,7 @@ function App() {
     setStudentEmail('');
     setStudentAuthError('');
     window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+    window.localStorage.removeItem(STUDENT_INTENT_KEY);
     setActiveTab('vote');
   };
 
@@ -983,6 +991,13 @@ function App() {
   };
 
   const handleRoleSelect = (selectedRole) => {
+    if (selectedRole === 'student') {
+      window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
+    } else {
+      window.localStorage.removeItem(STUDENT_INTENT_KEY);
+      window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
+    }
+
     setRole(selectedRole);
     setActiveTab(getRoleStartTab(selectedRole));
 
@@ -1042,6 +1057,7 @@ function App() {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     window.localStorage.setItem(STUDENT_AUTH_PENDING_KEY, '1');
+    window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
 
     try {
       await setPersistence(auth, browserLocalPersistence);
