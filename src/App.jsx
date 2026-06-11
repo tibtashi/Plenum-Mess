@@ -704,6 +704,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!auth) return;
+    setPersistence(auth, browserLocalPersistence).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!auth) return undefined;
 
     return onAuthStateChanged(auth, (student) => {
@@ -1052,14 +1057,13 @@ function App() {
       return;
     }
 
-    setIsStudentSigningIn(true);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     window.localStorage.setItem(STUDENT_AUTH_PENDING_KEY, '1');
     window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
+    setIsStudentSigningIn(true);
 
     try {
-      await setPersistence(auth, browserLocalPersistence);
       const result = await signInWithPopup(auth, provider);
       if (!result?.user) {
         throw new Error('Google login finished without returning a Firebase user.');
