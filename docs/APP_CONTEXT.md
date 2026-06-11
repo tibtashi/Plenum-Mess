@@ -72,6 +72,8 @@ Student voting now supports multi-vote per meal session:
 
 Student social posts appear on the student graffiti wall and are also visible to admin in the Social tab.
 
+Menu dish cards use generated dish-specific SVG visuals instead of repeated remote stock photos. This keeps the prototype consistent on Vercel and avoids different dishes showing the same unrelated image.
+
 ### Chef
 
 Chef PIN is `1111`.

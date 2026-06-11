@@ -187,6 +187,46 @@ const hasStoredStudentIntent = () =>
 
 const QUICK_MATERIAL_KEYS = ['tomato', 'onion', 'rice', 'potato', 'chicken', 'paneer'];
 
+const escapeSvgText = (value) =>
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+const createDishImage = (title, base, accent, garnish) => {
+  const words = title.split(' ');
+  const splitAt = Math.ceil(words.length / 2);
+  const lineOne = escapeSvgText(words.slice(0, splitAt).join(' '));
+  const lineTwo = escapeSvgText(words.slice(splitAt).join(' '));
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560">
+      <defs>
+        <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="${base}"/>
+          <stop offset="1" stop-color="#fffaf6"/>
+        </linearGradient>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#5d321d" flood-opacity="0.18"/>
+        </filter>
+      </defs>
+      <rect width="900" height="560" fill="url(#bg)"/>
+      <circle cx="780" cy="110" r="170" fill="${accent}" opacity="0.18"/>
+      <circle cx="110" cy="470" r="150" fill="${garnish}" opacity="0.18"/>
+      <g filter="url(#shadow)">
+        <ellipse cx="450" cy="292" rx="190" ry="112" fill="#f8efe7"/>
+        <ellipse cx="450" cy="282" rx="146" ry="82" fill="${accent}"/>
+        <ellipse cx="450" cy="270" rx="105" ry="56" fill="#fff9f1" opacity="0.82"/>
+        <circle cx="405" cy="250" r="18" fill="${garnish}"/>
+        <circle cx="478" cy="300" r="20" fill="${garnish}" opacity="0.82"/>
+        <circle cx="500" cy="246" r="13" fill="#ffffff" opacity="0.88"/>
+        <path d="M312 340c78 38 197 39 278 0" fill="none" stroke="#7e4426" stroke-width="12" stroke-linecap="round" opacity="0.35"/>
+      </g>
+      <text x="62" y="86" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#7e4426">${lineOne}</text>
+      ${lineTwo ? `<text x="62" y="128" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#7e4426">${lineTwo}</text>` : ''}
+      <text x="62" y="486" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="5" fill="#8a776b">CRAVEBOX MESS PLATE</text>
+    </svg>`;
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
 const DISH_CATALOG = [
   {
     id: 1,
@@ -194,7 +234,7 @@ const DISH_CATALOG = [
     votes: 1205,
     rating: 4.9,
     description: 'Creamy paneer gravy with rice and masala that works well for a big lunch service.',
-    img: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Paneer Butter Rice', '#fff1df', '#e58f4f', '#f3c45d'),
     ingredients: ['paneer', 'tomato', 'onion', 'rice', 'spices'],
   },
   {
@@ -203,7 +243,7 @@ const DISH_CATALOG = [
     votes: 842,
     rating: 4.8,
     description: 'Campus-style chicken curry served over rice with onion-tomato masala.',
-    img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Chicken Curry Bowl', '#fff0e8', '#b74d2f', '#f0b85a'),
     ingredients: ['chicken', 'tomato', 'onion', 'rice', 'spices'],
   },
   {
@@ -212,7 +252,7 @@ const DISH_CATALOG = [
     votes: 621,
     rating: 4.7,
     description: 'Potato masala tossed with rice for a quick, filling service-friendly meal.',
-    img: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Aloo Masala Rice', '#fff5de', '#d7902f', '#84a85b'),
     ingredients: ['potato', 'onion', 'rice', 'spices'],
   },
   {
@@ -221,7 +261,7 @@ const DISH_CATALOG = [
     votes: 560,
     rating: 4.6,
     description: 'Rich tomato-paneer curry that works well with both rice and roti service.',
-    img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Tomato Paneer Curry', '#fff0ec', '#c74432', '#f0d36b'),
     ingredients: ['paneer', 'tomato', 'onion', 'spices'],
   },
   {
@@ -230,7 +270,7 @@ const DISH_CATALOG = [
     votes: 415,
     rating: 4.4,
     description: 'A mild milk-rice option with warm masala notes for breakfast or night service.',
-    img: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Masala Doodh Rice', '#fff8ee', '#f2d0a7', '#b98545'),
     ingredients: ['milk', 'rice', 'spices'],
   },
   {
@@ -239,7 +279,7 @@ const DISH_CATALOG = [
     votes: 504,
     rating: 4.5,
     description: 'Chicken, onion, and masala cooked into a dependable mess-style main dish.',
-    img: 'https://images.unsplash.com/photo-1604908554165-e3f7d06b79b2?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Homestyle Chicken Masala', '#fff0e5', '#a94f33', '#e8ad52'),
     ingredients: ['chicken', 'onion', 'tomato', 'spices'],
   },
   {
@@ -248,7 +288,7 @@ const DISH_CATALOG = [
     votes: 386,
     rating: 4.5,
     description: 'Fast rice service with garlic, spices, and a light onion tempering.',
-    img: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Garlic Jeera Rice', '#fff7df', '#d8b55f', '#6e9d69'),
     ingredients: ['rice', 'garlic', 'onion', 'spices'],
   },
   {
@@ -257,7 +297,7 @@ const DISH_CATALOG = [
     votes: 735,
     rating: 4.8,
     description: 'Lentils finished with tomato, garlic, and spices for a reliable mess favorite.',
-    img: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Dal Tadka Rice', '#fff4df', '#d98c2d', '#9eb95c'),
     ingredients: ['lentils', 'tomato', 'garlic', 'rice', 'spices'],
   },
   {
@@ -266,7 +306,7 @@ const DISH_CATALOG = [
     votes: 612,
     rating: 4.6,
     description: 'Paneer and peas in a tomato-onion masala that works for lunch or dinner.',
-    img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Paneer Peas Masala', '#f3fff0', '#7faa5b', '#e6b65d'),
     ingredients: ['paneer', 'peas', 'tomato', 'onion', 'spices'],
   },
   {
@@ -275,7 +315,7 @@ const DISH_CATALOG = [
     votes: 468,
     rating: 4.4,
     description: 'Cooling curd rice option for days when students want something lighter.',
-    img: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Curd Rice Bowl', '#effbff', '#76b6c8', '#e1d6a1'),
     ingredients: ['curd', 'rice', 'milk', 'spices'],
   },
   {
@@ -284,7 +324,7 @@ const DISH_CATALOG = [
     votes: 690,
     rating: 4.7,
     description: 'Rice cooked with carrot, peas, capsicum, onion, and warm spices.',
-    img: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Veg Pulao', '#f2fff0', '#71a965', '#e7a14c'),
     ingredients: ['rice', 'carrot', 'peas', 'capsicum', 'onion', 'spices'],
   },
   {
@@ -293,7 +333,7 @@ const DISH_CATALOG = [
     votes: 548,
     rating: 4.5,
     description: 'Potato and flour based plate with curd support for breakfast service.',
-    img: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Aloo Paratha Plate', '#fff1e1', '#c98a4b', '#efe2a1'),
     ingredients: ['potato', 'flour', 'curd', 'spices'],
   },
   {
@@ -302,7 +342,7 @@ const DISH_CATALOG = [
     votes: 577,
     rating: 4.6,
     description: 'Chicken rice with ginger-garlic base and onion-tomato masala.',
-    img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Ginger Garlic Chicken Rice', '#fff2e7', '#b96036', '#d6bf63'),
     ingredients: ['chicken', 'rice', 'ginger', 'garlic', 'onion', 'spices'],
   },
   {
@@ -311,7 +351,7 @@ const DISH_CATALOG = [
     votes: 512,
     rating: 4.5,
     description: 'A dal-focused option when tomato, garlic, lentils, and spices are available.',
-    img: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Tomato Garlic Dal', '#fff0e6', '#c85b35', '#e2bb55'),
     ingredients: ['lentils', 'tomato', 'garlic', 'spices'],
   },
   {
@@ -320,7 +360,7 @@ const DISH_CATALOG = [
     votes: 436,
     rating: 4.3,
     description: 'Cabbage and peas cooked with onion, garlic, and simple mess-style spices.',
-    img: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Cabbage Peas Sabzi', '#f3fff1', '#82aa65', '#d3c35d'),
     ingredients: ['cabbage', 'peas', 'onion', 'garlic', 'spices'],
   },
   {
@@ -329,7 +369,7 @@ const DISH_CATALOG = [
     votes: 498,
     rating: 4.4,
     description: 'Gobi-aloo style curry with tomato, ginger, and warm spices.',
-    img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Cauliflower Potato Curry', '#fff6e8', '#d8a24d', '#91a66a'),
     ingredients: ['cauliflower', 'potato', 'tomato', 'ginger', 'spices'],
   },
   {
@@ -338,7 +378,7 @@ const DISH_CATALOG = [
     votes: 650,
     rating: 4.6,
     description: 'Egg curry with rice, onion-tomato masala, and basic pantry spices.',
-    img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=900&q=80',
+    img: createDishImage('Egg Curry Rice', '#fff3df', '#d27538', '#f4d470'),
     ingredients: ['egg', 'rice', 'onion', 'tomato', 'spices'],
   },
 ];
