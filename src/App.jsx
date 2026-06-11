@@ -30,7 +30,7 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   setPersistence,
-  signInWithPopup,
+  signInWithRedirect,
   signOut,
 } from 'firebase/auth';
 import {
@@ -1106,21 +1106,7 @@ function App() {
     setIsStudentSigningIn(true);
 
     try {
-      const result = await signInWithPopup(auth, provider);
-      if (!result?.user) {
-        throw new Error('Google login finished without returning a Firebase user.');
-      }
-
-      const nextName = result.user.displayName || result.user.email?.split('@')[0] || 'Student';
-      window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
-      window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
-      setCurrentStudent(result.user);
-      setUserName(nextName);
-      setStudentEmail(result.user.email || '');
-      setRole('student');
-      setView('app');
-      setActiveTab(getRoleStartTab('student'));
-      setIsStudentSigningIn(false);
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
       setStudentAuthError(getGoogleAuthErrorMessage(error));

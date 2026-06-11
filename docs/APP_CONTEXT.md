@@ -140,7 +140,7 @@ Firestore inventory sync is attempted first. If Firestore is unavailable, the pr
 - Kept Firebase Google sign-in as an optional student login path.
 - Updated Google login return flow so authenticated students go directly into the student section after Gmail selection.
 - Added local Firebase auth persistence plus a pending-login marker so the app can recover correctly after Google redirects.
-- Changed student Google login to popup-result flow because the redirect restore path was not returning a Firebase user reliably in the target browser.
+- Changed student Google login back to redirect-only flow so browser popup blockers do not stop optional Gmail login.
 - Added Firestore student registry collection `registered_students_v2`.
 - Changed admin participation to overall totals instead of per-session checking.
 - Added Admin Social tab for student wall posts.
