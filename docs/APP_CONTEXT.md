@@ -134,8 +134,8 @@ Firestore inventory sync is attempted first. If Firestore is unavailable, the pr
 - Added bilingual publish confirmation modal.
 - Added session-separated student voting and chef result sections.
 - Changed student voting from single-choice to multi-vote with tap-again removal.
-- Made Firebase Google sign-in mandatory for student access.
-- Kept the student name field as display context only; typed names no longer bypass authentication.
+- Restored username-based student entry so the app stays usable while Google login is unstable.
+- Kept Firebase Google sign-in as an optional student login path.
 - Updated Google login return flow so authenticated students go directly into the student section after Gmail selection.
 - Added local Firebase auth persistence plus a pending-login marker so the app can recover correctly after Google redirects.
 - Changed student Google login to popup-result flow because the redirect restore path was not returning a Firebase user reliably in the target browser.

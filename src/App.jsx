@@ -1015,25 +1015,27 @@ function App() {
 
   const handleAuth = async () => {
     if (role === 'student') {
-      if (!currentStudent) {
-        setStudentAuthError('Please sign in with Google Mail before entering the student portal.');
+      const name = currentStudent?.displayName || currentStudent?.email?.split('@')[0] || userName.trim();
+
+      if (!name) {
+        setStudentAuthError('Enter your name or use Google Mail to continue.');
         return;
       }
 
-      const name = currentStudent.displayName || currentStudent.email?.split('@')[0] || userName.trim() || 'Student';
+      const studentId = currentStudent?.uid ?? `manual-${getStudentKey(name)}`;
 
       try {
         await saveStudentRegistration({
-          id: currentStudent.uid,
+          id: studentId,
           name,
-          email: currentStudent.email || studentEmail,
-          authUid: currentStudent.uid,
+          email: currentStudent?.email || studentEmail,
+          authUid: currentStudent?.uid ?? '',
         });
       } catch {
-        setStudentAuthError('Student details could not be saved right now. Please try again.');
-        return;
+        setStudentAuthError('');
       }
 
+      window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
       setView('app');
       return;
     }
@@ -1402,17 +1404,20 @@ function App() {
               <input
                 autoFocus
                 value={userName}
-                onChange={(event) => setUserName(event.target.value)}
+                onChange={(event) => {
+                  setUserName(event.target.value);
+                  setStudentAuthError('');
+                }}
                 placeholder="e.g. Jordan"
                 className="w-full rounded-[1.5rem] border border-outline-variant/40 bg-background px-6 py-5 text-center text-xl font-black text-primary outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
               />
 
               <button
-                disabled={!currentStudent}
+                disabled={!currentStudent && !userName.trim()}
                 onClick={handleAuth}
                 className="w-full rounded-full bg-primary px-6 py-4 text-label-bold font-black uppercase tracking-[0.25em] text-white transition-all disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {currentStudent ? 'Access Portal' : 'Google Login Required'}
+                Access Portal
               </button>
 
               <button
