@@ -61,7 +61,7 @@ Most prototype-only voting/menu/social state still uses browser localStorage.
 
 ### Student
 
-Student entry keeps the name input as the primary flow. The optional Google mail button is secondary and saves the authenticated student email when Firebase Auth succeeds.
+Student entry keeps the name input as prototype access, but manual names are not counted as registered students. The optional Google mail button saves authenticated students to Firestore and is the source of truth for real registered-student totals.
 
 Student voting now supports multi-vote per meal session:
 
@@ -103,9 +103,9 @@ Admin PIN is `0000`.
 
 Admin features:
 
-- Overall registered student count.
-- Overall student-voted count across all meal sessions.
-- Overall not-voted count.
+- Overall verified Google student count.
+- Overall verified Google student-voted count across all meal sessions.
+- Overall verified Google not-voted count.
 - Daily participation chart.
 - Critical stock alerts.
 - Student Social Feed tab with the same graffiti wall styling as the student wall, plus readable comments.

@@ -988,6 +988,14 @@ function App() {
   const heroMeal = sortedMeals[0];
   const selectedVoteIds = toVoteArray(studentVotesBySession[activeMealSession]?.[studentKey]);
   const hasVoted = selectedVoteIds.length > 0;
+  const verifiedRegisteredStudents = useMemo(
+    () => registeredStudents.filter((student) => student.provider === 'google' || (student.uid && student.email)),
+    [registeredStudents]
+  );
+  const verifiedStudentIds = useMemo(
+    () => new Set(verifiedRegisteredStudents.map((student) => student.id)),
+    [verifiedRegisteredStudents]
+  );
   const votedStudentCount = new Set(
     Object.values(studentVotesBySession).flatMap((sessionVoteMap) =>
       Object.entries(sessionVoteMap ?? {})
@@ -995,10 +1003,18 @@ function App() {
         .map(([studentId]) => studentId)
     )
   ).size;
+  const verifiedVotedStudentCount = new Set(
+    Object.values(studentVotesBySession).flatMap((sessionVoteMap) =>
+      Object.entries(sessionVoteMap ?? {})
+        .filter(([studentId, voteValue]) => verifiedStudentIds.has(studentId) && toVoteArray(voteValue).length > 0)
+        .map(([studentId]) => studentId)
+    )
+  ).size;
   const participationStats = {
-    total: registeredStudents.length,
-    voted: votedStudentCount,
-    notVoted: Math.max(registeredStudents.length - votedStudentCount, 0),
+    total: verifiedRegisteredStudents.length,
+    voted: verifiedVotedStudentCount,
+    notVoted: Math.max(verifiedRegisteredStudents.length - verifiedVotedStudentCount, 0),
+    prototypeVoted: votedStudentCount,
   };
   const sentimentScore = Math.max(72, Math.min(96, 88 - lowStockItems.length * 3));
   const engagementBars = [42, 64, 56, 90, 76, 34, 28];
@@ -1028,6 +1044,8 @@ function App() {
         email,
         name,
         lastLoginAt: serverTimestamp(),
+        provider: 'google',
+        verified: true,
         role: 'student',
       },
       { merge: true }
@@ -1062,17 +1080,17 @@ function App() {
         return;
       }
 
-      const studentId = currentStudent?.uid ?? `manual-${getStudentKey(name)}`;
-
-      try {
-        await saveStudentRegistration({
-          id: studentId,
-          name,
-          email: currentStudent?.email || studentEmail,
-          authUid: currentStudent?.uid ?? '',
-        });
-      } catch {
-        setStudentAuthError('');
+      if (currentStudent) {
+        try {
+          await saveStudentRegistration({
+            id: currentStudent.uid,
+            name,
+            email: currentStudent.email || '',
+            authUid: currentStudent.uid,
+          });
+        } catch {
+          setStudentAuthError('');
+        }
       }
 
       window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
@@ -2701,21 +2719,21 @@ function AdminView({
           icon={GraduationCap}
           title="Registered Students"
           value={String(participationStats.total)}
-          description="Students saved in the login registry"
+          description="Verified Google students saved in the login registry"
           tone="peach"
         />
         <SummaryPanel
           icon={TrendingUp}
           title="Students Voted"
           value={`${participationStats.voted} / ${participationStats.total}`}
-          description="Overall students who have voted in any meal session"
+          description="Verified students who have voted in any meal session"
           tone="sage"
         />
         <SummaryPanel
           icon={User}
           title="Not Voted Yet"
           value={String(participationStats.notVoted)}
-          description="Registered students still waiting to vote"
+          description="Verified students still waiting to vote"
           tone="rose"
         />
       </section>
@@ -2725,7 +2743,7 @@ function AdminView({
           <div>
             <h3 className="text-headline-md text-cocoa">Student Login Registry</h3>
             <p className="mt-1 text-body-md text-on-surface-variant">
-              Use this when you want to start fresh with a clean student registration list.
+              Google-authenticated students are counted here. Manual name entry stays as prototype access only.
             </p>
           </div>
           <button
