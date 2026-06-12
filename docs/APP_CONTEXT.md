@@ -62,6 +62,7 @@ Most prototype-only voting/menu/social state still uses browser localStorage.
 ### Student
 
 Student entry keeps the name input as prototype access, but manual names are not counted as registered students. The optional Google mail button saves authenticated students to Firestore and is the source of truth for real registered-student totals. Verified student records keep `firstLoginAt` from the first successful Google login and update `lastLoginAt` on later logins. The typed student name is saved before Google redirect login and restored after the app reloads, so Gmail authentication does not clear the name field.
+When a student is signed in with Google, the Student Hub header uses the Firebase `photoURL` profile image in place of the default student icon, with the icon retained as a fallback for manual-name entry or failed image loading.
 
 Student voting now supports multi-vote per meal session:
 

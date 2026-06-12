@@ -677,6 +677,29 @@ function FoodImage({ src, alt, className }) {
   );
 }
 
+function StudentHeaderAvatar({ student, fallbackIcon: FallbackIcon, fallbackAccent }) {
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const photoUrl = student?.photoURL;
+
+  if (photoUrl && !avatarFailed) {
+    return (
+      <img
+        src={photoUrl}
+        alt={student?.displayName ? `${student.displayName} profile` : 'Student profile'}
+        referrerPolicy="no-referrer"
+        onError={() => setAvatarFailed(true)}
+        className="h-12 w-12 rounded-[1.2rem] border border-outline-variant/30 object-cover shadow-inner-soft"
+      />
+    );
+  }
+
+  return (
+    <div className={`flex h-12 w-12 items-center justify-center rounded-[1.2rem] ${fallbackAccent} shadow-inner-soft`}>
+      <FallbackIcon className="h-6 w-6" />
+    </div>
+  );
+}
+
 function App() {
   const [view, setView] = useState(() => (hasStoredStudentIntent() ? 'student-auth' : 'role-select'));
   const [role, setRole] = useState(() => (hasStoredStudentIntent() ? 'student' : null));
@@ -1588,9 +1611,17 @@ function App() {
           <header className="sticky top-0 z-50 border-b border-outline-variant/30 bg-background/85 backdrop-blur-xl">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
               <div className="flex items-center gap-3">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-[1.2rem] ${roleInfo?.accent} shadow-inner-soft`}>
-                  <RoleIcon className="h-6 w-6" />
-                </div>
+                {role === 'student' ? (
+                  <StudentHeaderAvatar
+                    student={currentStudent}
+                    fallbackIcon={RoleIcon}
+                    fallbackAccent={roleInfo?.accent}
+                  />
+                ) : (
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-[1.2rem] ${roleInfo?.accent} shadow-inner-soft`}>
+                    <RoleIcon className="h-6 w-6" />
+                  </div>
+                )}
                 <div>
                   <span className="block text-headline-md leading-none text-primary">CraveBox</span>
                   <span className="mt-1 block text-label-sm uppercase tracking-[0.2em] text-cocoa/45">
