@@ -61,7 +61,7 @@ Most prototype-only voting/menu/social state still uses browser localStorage.
 
 ### Student
 
-Student entry keeps the name input as prototype access, but manual names are not counted as registered students. The optional Google mail button saves authenticated students to Firestore and is the source of truth for real registered-student totals.
+Student entry keeps the name input as prototype access, but manual names are not counted as registered students. The optional Google mail button saves authenticated students to Firestore and is the source of truth for real registered-student totals. Verified student records keep `firstLoginAt` from the first successful Google login and update `lastLoginAt` on later logins.
 
 Student voting now supports multi-vote per meal session:
 

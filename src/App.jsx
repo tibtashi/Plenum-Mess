@@ -37,6 +37,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -1037,12 +1038,17 @@ function App() {
   const saveStudentRegistration = async ({ id, name, email = '', authUid = '' }) => {
     if (!db) return;
 
+    const studentRef = doc(db, 'artifacts', appId, 'public', 'data', STUDENT_REGISTRY_COLLECTION, id);
+    const existingStudent = await getDoc(studentRef);
+    const shouldSetFirstLogin = !existingStudent.exists() || !existingStudent.data()?.firstLoginAt;
+
     await setDoc(
-      doc(db, 'artifacts', appId, 'public', 'data', STUDENT_REGISTRY_COLLECTION, id),
+      studentRef,
       {
         uid: authUid,
         email,
         name,
+        ...(shouldSetFirstLogin ? { firstLoginAt: serverTimestamp() } : {}),
         lastLoginAt: serverTimestamp(),
         provider: 'google',
         verified: true,
