@@ -154,6 +154,7 @@ const LOCAL_VOTES_BY_SESSION_KEY = 'cravebox_votes_by_session_v1';
 const LOCAL_STUDENT_VOTES_BY_SESSION_KEY = 'cravebox_student_votes_by_session_v1';
 const STUDENT_AUTH_PENDING_KEY = 'cravebox_student_auth_pending_v1';
 const STUDENT_INTENT_KEY = 'cravebox_student_intent_v1';
+const STUDENT_NAME_DRAFT_KEY = 'cravebox_student_name_draft_v1';
 const STUDENT_REGISTRY_COLLECTION = 'registered_students_v2';
 const LOW_STOCK_MINIMUM_PAR_LEVEL = 10;
 
@@ -185,6 +186,18 @@ const saveLocalInventory = (nextInventory) => {
 const hasStoredStudentIntent = () =>
   window.localStorage.getItem(STUDENT_INTENT_KEY) === 'student' ||
   window.localStorage.getItem(STUDENT_AUTH_PENDING_KEY) === '1';
+
+const getStoredStudentNameDraft = () =>
+  window.localStorage.getItem(STUDENT_NAME_DRAFT_KEY)?.trim() || '';
+
+const saveStudentNameDraft = (name) => {
+  const nextName = name.trim();
+  if (nextName) {
+    window.localStorage.setItem(STUDENT_NAME_DRAFT_KEY, nextName);
+  } else {
+    window.localStorage.removeItem(STUDENT_NAME_DRAFT_KEY);
+  }
+};
 
 const QUICK_MATERIAL_KEYS = ['tomato', 'onion', 'rice', 'potato', 'chicken', 'paneer'];
 
@@ -667,7 +680,7 @@ function FoodImage({ src, alt, className }) {
 function App() {
   const [view, setView] = useState(() => (hasStoredStudentIntent() ? 'student-auth' : 'role-select'));
   const [role, setRole] = useState(() => (hasStoredStudentIntent() ? 'student' : null));
-  const [userName, setUserName] = useState('');
+  const [userName, setUserName] = useState(() => getStoredStudentNameDraft());
   const [studentEmail, setStudentEmail] = useState('');
   const [pin, setPin] = useState('');
   const [activeTab, setActiveTab] = useState('vote');
@@ -760,8 +773,9 @@ function App() {
         return;
       }
 
-      const nextName = student.displayName || student.email?.split('@')[0] || 'Student';
+      const nextName = getStoredStudentNameDraft() || student.displayName || student.email?.split('@')[0] || 'Student';
       setUserName(nextName);
+      saveStudentNameDraft(nextName);
       setStudentEmail(student.email || '');
 
       const wasStudentLogin = hasStoredStudentIntent();
@@ -788,7 +802,7 @@ function App() {
   useEffect(() => {
     if (!currentStudent || !db) return;
 
-    const name = currentStudent.displayName || currentStudent.email?.split('@')[0] || 'Student';
+    const name = getStoredStudentNameDraft() || userName.trim() || currentStudent.displayName || currentStudent.email?.split('@')[0] || 'Student';
     saveStudentRegistration({
       id: currentStudent.uid,
       name,
@@ -797,7 +811,7 @@ function App() {
     }).catch(() => {
       setStudentAuthError('Google login worked, but saving the student record failed.');
     });
-  }, [currentStudent]);
+  }, [currentStudent, userName]);
 
   useEffect(() => {
     if (!auth) return;
@@ -808,11 +822,12 @@ function App() {
         const wasStudentLogin = hasStoredStudentIntent();
         if (!student || !wasStudentLogin) return;
 
-        const nextName = student.displayName || student.email?.split('@')[0] || 'Student';
+        const nextName = getStoredStudentNameDraft() || student.displayName || student.email?.split('@')[0] || 'Student';
         window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
         window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
         setCurrentStudent(student);
         setUserName(nextName);
+        saveStudentNameDraft(nextName);
         setStudentEmail(student.email || '');
         setRole('student');
         setView('app');
@@ -1032,6 +1047,7 @@ function App() {
     setStudentAuthError('');
     window.localStorage.removeItem(STUDENT_AUTH_PENDING_KEY);
     window.localStorage.removeItem(STUDENT_INTENT_KEY);
+    window.localStorage.removeItem(STUDENT_NAME_DRAFT_KEY);
     setActiveTab('vote');
   };
 
@@ -1079,7 +1095,7 @@ function App() {
 
   const handleAuth = async () => {
     if (role === 'student') {
-      const name = currentStudent?.displayName || currentStudent?.email?.split('@')[0] || userName.trim();
+      const name = userName.trim() || getStoredStudentNameDraft() || currentStudent?.displayName || currentStudent?.email?.split('@')[0];
 
       if (!name) {
         setStudentAuthError('Enter your name or use Google Mail to continue.');
@@ -1100,6 +1116,7 @@ function App() {
       }
 
       window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
+      saveStudentNameDraft(name);
       setView('app');
       return;
     }
@@ -1125,6 +1142,7 @@ function App() {
 
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
+    saveStudentNameDraft(userName);
     window.localStorage.setItem(STUDENT_AUTH_PENDING_KEY, '1');
     window.localStorage.setItem(STUDENT_INTENT_KEY, 'student');
     setIsStudentSigningIn(true);
@@ -1455,7 +1473,9 @@ function App() {
                 autoFocus
                 value={userName}
                 onChange={(event) => {
-                  setUserName(event.target.value);
+                  const nextName = event.target.value;
+                  setUserName(nextName);
+                  saveStudentNameDraft(nextName);
                   setStudentAuthError('');
                 }}
                 placeholder="e.g. Jordan"
